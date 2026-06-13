@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 
+	_ "github.com/farrasnazhif/go-starter/internal/dto/response"
 	"github.com/farrasnazhif/go-starter/internal/helpers"
 	"github.com/farrasnazhif/go-starter/internal/service"
 )
@@ -15,6 +16,16 @@ func NewUserHandler(userService service.UserService) *UserHandler {
 	return &UserHandler{userService: userService}
 }
 
+// GetProfile godoc
+//
+//	@Summary		Get user profile
+//	@Description	Get the authenticated user's profile
+//	@Tags			users
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Success		200	{object}	response.User
+//	@Failure		401
+//	@Router			/users/me [get]
 func (h *UserHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
 	userID := helpers.UserIDFromContext(r)
 
@@ -27,6 +38,16 @@ func (h *UserHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
 	helpers.SuccessResponse(w, http.StatusOK, "User retrieved successfully", result)
 }
 
+// GetBilling godoc
+//
+//	@Summary		Get user billing info
+//	@Description	Get the authenticated user's billing and subscription info
+//	@Tags			users
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Success		200	{object}	response.UserBilling
+//	@Failure		401
+//	@Router			/users/billing [get]
 func (h *UserHandler) GetBilling(w http.ResponseWriter, r *http.Request) {
 	userID := helpers.UserIDFromContext(r)
 

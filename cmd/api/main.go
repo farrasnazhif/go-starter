@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/farrasnazhif/go-starter/internal/database"
+	_ "github.com/farrasnazhif/go-starter/docs"
 	"github.com/farrasnazhif/go-starter/internal/handler"
 	"github.com/farrasnazhif/go-starter/internal/mailer"
 	"github.com/farrasnazhif/go-starter/internal/paypal"
@@ -14,6 +15,19 @@ import (
 	"github.com/farrasnazhif/go-starter/internal/router"
 	"github.com/farrasnazhif/go-starter/internal/service"
 )
+
+//	@title			Go Starter API
+//	@version		1.0
+//	@description	User authentication, profile management, and PayPal billing API
+
+//	@host		localhost:8080
+//	@BasePath	/api/v1
+//	@schemes	http https
+
+//	@securityDefinitions.apikey	BearerAuth
+//	@in							header
+//	@name						Authorization
+//	@description				Bearer token (e.g. "Bearer xxx")
 
 func main() {
 	addr := getEnv("ADDR", ":8080")

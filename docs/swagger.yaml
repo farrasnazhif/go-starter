@@ -1,63 +1,21 @@
 basePath: /api/v1
 definitions:
-  dto.CreateSessionRequest:
+  github_com_farrasnazhif_go-starter_internal_dto_request.CancelSubscription:
     properties:
-      mode:
-        enum:
-          - standard
-          - developer
-        type: string
-      prompt:
-        minLength: 10
-        type: string
-    required:
-      - prompt
-    type: object
-  dto.RefineSessionRequest:
-    properties:
-      instruction:
-        minLength: 3
-        type: string
-    required:
-      - instruction
-    type: object
-  main.APIResponse:
-    properties:
-      data: {}
-      message:
-        type: string
-      status:
-        type: integer
-    type: object
-  main.ErrorResponse:
-    properties:
-      error:
-        type: string
-      message:
-        type: string
-      status:
-        type: integer
-    type: object
-  main.HealthCheckResponse:
-    properties:
-      env:
-        type: string
-      status:
-        type: string
-      version:
+      reason:
         type: string
     type: object
-  main.LoginPayload:
+  github_com_farrasnazhif_go-starter_internal_dto_request.Login:
     properties:
       email:
         type: string
       password:
         type: string
     required:
-      - email
-      - password
+    - email
+    - password
     type: object
-  main.RegisterUserPayload:
+  github_com_farrasnazhif_go-starter_internal_dto_request.Register:
     properties:
       email:
         maxLength: 225
@@ -70,18 +28,69 @@ definitions:
         maxLength: 100
         type: string
     required:
-      - email
-      - password
-      - username
+    - email
+    - password
+    - username
     type: object
-  main.SendOTPPayload:
+  github_com_farrasnazhif_go-starter_internal_dto_request.SendOTP:
     properties:
       email:
         type: string
     required:
-      - email
+    - email
     type: object
-  main.UserWithToken:
+  github_com_farrasnazhif_go-starter_internal_dto_request.VerifyOTP:
+    properties:
+      code:
+        type: string
+      email:
+        type: string
+    required:
+    - code
+    - email
+    type: object
+  github_com_farrasnazhif_go-starter_internal_dto_response.Subscription:
+    properties:
+      approve_url:
+        type: string
+      status:
+        type: string
+      subscription_id:
+        type: string
+    type: object
+  github_com_farrasnazhif_go-starter_internal_dto_response.User:
+    properties:
+      credits:
+        type: integer
+      email:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      role:
+        type: string
+      username:
+        type: string
+    type: object
+  github_com_farrasnazhif_go-starter_internal_dto_response.UserBilling:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      expired_at:
+        type: string
+      role:
+        type: string
+      subscription_status:
+        type: string
+      userId:
+        type: string
+      username:
+        type: string
+    type: object
+  github_com_farrasnazhif_go-starter_internal_dto_response.UserWithToken:
     properties:
       credits:
         type: integer
@@ -98,509 +107,203 @@ definitions:
       username:
         type: string
     type: object
-  main.VerifyOTPPayload:
-    properties:
-      code:
-        type: string
-      email:
-        type: string
-    required:
-      - code
-      - email
-    type: object
-  main.userProfileResponse:
-    properties:
-      credits:
-        type: integer
-      email:
-        type: string
-      id:
-        type: string
-      is_active:
-        type: boolean
-      role:
-        type: string
-      username:
-        type: string
-    type: object
+host: localhost:8080
 info:
-  contact:
-    email: support@go-starter.example.com
-    name: API Support
-    url: https://go-starter.example.com/support
-  description: AI-powered startup idea validation and PRD generation platform
-  license:
-    name: Apache 2.0
-    url: http://www.apache.org/licenses/LICENSE-2.0.html
-  termsOfService: https://go-starter.example.com/terms
-  title: go-starter API
-  version: 0.0.1
+  contact: {}
+  description: User authentication, profile management, and PayPal billing API
+  title: Go Starter API
+  version: "1.0"
 paths:
   /auth/login:
     post:
       consumes:
-        - application/json
-      description: Login user with email and password
+      - application/json
+      description: Authenticate with email and password, returns JWT token
       parameters:
-        - description: Email and password
-          in: body
-          name: payload
-          required: true
-          schema:
-            $ref: "#/definitions/main.LoginPayload"
+      - description: Login payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_farrasnazhif_go-starter_internal_dto_request.Login'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
-          description: User logged in
+          description: OK
           schema:
-            $ref: "#/definitions/main.UserWithToken"
+            $ref: '#/definitions/github_com_farrasnazhif_go-starter_internal_dto_response.UserWithToken'
         "400":
           description: Bad Request
-          schema: {}
-        "500":
-          description: Internal Server Error
-          schema: {}
-      summary: Login user with email and password
+      summary: Login user
       tags:
-        - authentication
+      - auth
   /auth/otp/send:
     post:
       consumes:
-        - application/json
-      description: Send OTP for user registration
+      - application/json
+      description: Send OTP code to email for verification
       parameters:
-        - description: Email for OTP
-          in: body
-          name: payload
-          required: true
-          schema:
-            $ref: "#/definitions/main.SendOTPPayload"
+      - description: Email payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_farrasnazhif_go-starter_internal_dto_request.SendOTP'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
-          description: OTP sent
-          schema:
-            additionalProperties:
-              type: string
-            type: object
+          description: OK
         "400":
           description: Bad Request
-          schema: {}
-        "500":
-          description: Internal Server Error
-          schema: {}
-      summary: Send OTP for user registration
+      summary: Send OTP for registration
       tags:
-        - authentication
+      - auth
   /auth/otp/verify:
     post:
       consumes:
-        - application/json
-      description: Verify OTP and activate user account
+      - application/json
+      description: Verify OTP code and activate user account, returns JWT token
       parameters:
-        - description: Email and OTP code
-          in: body
-          name: payload
-          required: true
-          schema:
-            $ref: "#/definitions/main.VerifyOTPPayload"
+      - description: OTP verification payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_farrasnazhif_go-starter_internal_dto_request.VerifyOTP'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
-          description: OTP verified and user activated
+          description: OK
           schema:
-            $ref: "#/definitions/main.UserWithToken"
+            $ref: '#/definitions/github_com_farrasnazhif_go-starter_internal_dto_response.UserWithToken'
         "400":
           description: Bad Request
-          schema: {}
-        "500":
-          description: Internal Server Error
-          schema: {}
-      summary: Verify OTP and activate user
+      summary: Verify OTP and activate account
       tags:
-        - authentication
+      - auth
   /auth/register:
     post:
       consumes:
-        - application/json
+      - application/json
       description: Create a user account and send OTP for verification
       parameters:
-        - description: User credentials
-          in: body
-          name: payload
-          required: true
-          schema:
-            $ref: "#/definitions/main.RegisterUserPayload"
+      - description: Registration payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_farrasnazhif_go-starter_internal_dto_request.Register'
       produces:
-        - application/json
+      - application/json
       responses:
         "201":
-          description: User registered
-          schema:
-            additionalProperties: true
-            type: object
+          description: Created
         "400":
           description: Bad Request
-          schema: {}
+      summary: Register a new user
+      tags:
+      - auth
+  /billing/paypal/subscriptions:
+    delete:
+      consumes:
+      - application/json
+      description: Cancel the current Pro subscription
+      parameters:
+      - description: Cancellation reason
+        in: body
+        name: body
+        schema:
+          $ref: '#/definitions/github_com_farrasnazhif_go-starter_internal_dto_request.CancelSubscription'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "401":
+          description: Unauthorized
         "500":
           description: Internal Server Error
-          schema: {}
-      summary: Register a user
+      security:
+      - BearerAuth: []
+      summary: Cancel PayPal subscription
       tags:
-        - authentication
-  /billing/paypal/subscriptions:
+      - billing
     post:
-      description:
-        Create a PayPal subscription for the Pro plan and return approval
-        links
+      description: Create a new Pro subscription via PayPal
       produces:
-        - application/json
+      - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: "#/definitions/main.APIResponse"
+            $ref: '#/definitions/github_com_farrasnazhif_go-starter_internal_dto_response.Subscription'
         "401":
           description: Unauthorized
-          schema:
-            $ref: "#/definitions/main.ErrorResponse"
         "500":
           description: Internal Server Error
-          schema:
-            $ref: "#/definitions/main.ErrorResponse"
       security:
-        - ApiKeyAuth: []
+      - BearerAuth: []
       summary: Create PayPal subscription
       tags:
-        - billing
+      - billing
   /billing/paypal/webhook:
     post:
       consumes:
-        - application/json
-      description: Receive verified PayPal subscription webhooks
+      - application/json
+      description: Handle PayPal subscription webhook events
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
         "400":
           description: Bad Request
-          schema:
-            $ref: "#/definitions/main.ErrorResponse"
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: "#/definitions/main.ErrorResponse"
       summary: PayPal webhook
       tags:
-        - billing
-  /health:
+      - billing
+  /users/billing:
     get:
-      consumes:
-        - application/json
-      description: Check if the API is running and retrieve health status
+      description: Get the authenticated user's billing and subscription info
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: "#/definitions/main.HealthCheckResponse"
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: "#/definitions/main.ErrorResponse"
-      summary: Health check endpoint
-      tags:
-        - health
-  /prds/{oldPRDID}/diff/{newPRDID}:
-    get:
-      description: Compare an old PRD version with a newer PRD version
-      parameters:
-        - description: Old PRD ID
-          in: path
-          name: oldPRDID
-          required: true
-          type: string
-        - description: New PRD ID
-          in: path
-          name: newPRDID
-          required: true
-          type: string
-      produces:
-        - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: "#/definitions/main.APIResponse"
+            $ref: '#/definitions/github_com_farrasnazhif_go-starter_internal_dto_response.UserBilling'
         "401":
           description: Unauthorized
-          schema:
-            $ref: "#/definitions/main.ErrorResponse"
-        "404":
-          description: Not Found
-          schema:
-            $ref: "#/definitions/main.ErrorResponse"
-        "409":
-          description: Conflict
-          schema:
-            $ref: "#/definitions/main.ErrorResponse"
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: "#/definitions/main.ErrorResponse"
       security:
-        - ApiKeyAuth: []
-      summary: Diff PRDs
+      - BearerAuth: []
+      summary: Get user billing info
       tags:
-        - prds
-  /prds/{prdID}:
-    get:
-      description: Load an exact PRD version
-      parameters:
-        - description: PRD ID
-          in: path
-          name: prdID
-          required: true
-          type: string
-      produces:
-        - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: "#/definitions/main.APIResponse"
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: "#/definitions/main.ErrorResponse"
-        "404":
-          description: Not Found
-          schema:
-            $ref: "#/definitions/main.ErrorResponse"
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: "#/definitions/main.ErrorResponse"
-      security:
-        - ApiKeyAuth: []
-      summary: Get PRD
-      tags:
-        - prds
-  /prds/{prdID}/export/markdown:
-    post:
-      description: Download a PRD as a markdown file
-      parameters:
-        - description: PRD ID
-          in: path
-          name: prdID
-          required: true
-          type: string
-      produces:
-        - text/markdown
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: "#/definitions/main.ErrorResponse"
-        "404":
-          description: Not Found
-          schema:
-            $ref: "#/definitions/main.ErrorResponse"
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: "#/definitions/main.ErrorResponse"
-      security:
-        - ApiKeyAuth: []
-      summary: Export PRD markdown
-      tags:
-        - prds
-  /sessions:
-    get:
-      description: Load all authenticated user PRD workspaces
-      produces:
-        - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: "#/definitions/main.APIResponse"
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: "#/definitions/main.ErrorResponse"
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: "#/definitions/main.ErrorResponse"
-      security:
-        - ApiKeyAuth: []
-      summary: List sessions
-      tags:
-        - sessions
-    post:
-      consumes:
-        - application/json
-      description: Create a new AI PRD workspace
-      parameters:
-        - description: Initial prompt and PRD mode
-          in: body
-          name: payload
-          required: true
-          schema:
-            $ref: "#/definitions/dto.CreateSessionRequest"
-      produces:
-        - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: "#/definitions/main.APIResponse"
-        "400":
-          description: Bad Request
-          schema:
-            $ref: "#/definitions/main.ErrorResponse"
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: "#/definitions/main.ErrorResponse"
-        "402":
-          description: Payment Required
-          schema:
-            $ref: "#/definitions/main.ErrorResponse"
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: "#/definitions/main.ErrorResponse"
-      security:
-        - ApiKeyAuth: []
-      summary: Create session
-      tags:
-        - sessions
-  /sessions/{sessionID}/messages:
-    get:
-      description: Load chat history for a PRD workspace
-      parameters:
-        - description: Session ID
-          in: path
-          name: sessionID
-          required: true
-          type: string
-      produces:
-        - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: "#/definitions/main.APIResponse"
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: "#/definitions/main.ErrorResponse"
-        "404":
-          description: Not Found
-          schema:
-            $ref: "#/definitions/main.ErrorResponse"
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: "#/definitions/main.ErrorResponse"
-      security:
-        - ApiKeyAuth: []
-      summary: List session messages
-      tags:
-        - sessions
-  /sessions/{sessionID}/refine:
-    post:
-      consumes:
-        - application/json
-      description: Create a new PRD version from a refinement instruction
-      parameters:
-        - description: Session ID
-          in: path
-          name: sessionID
-          required: true
-          type: string
-        - description: Refinement instruction
-          in: body
-          name: payload
-          required: true
-          schema:
-            $ref: "#/definitions/dto.RefineSessionRequest"
-      produces:
-        - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: "#/definitions/main.APIResponse"
-        "400":
-          description: Bad Request
-          schema:
-            $ref: "#/definitions/main.ErrorResponse"
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: "#/definitions/main.ErrorResponse"
-        "402":
-          description: Payment Required
-          schema:
-            $ref: "#/definitions/main.ErrorResponse"
-        "404":
-          description: Not Found
-          schema:
-            $ref: "#/definitions/main.ErrorResponse"
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: "#/definitions/main.ErrorResponse"
-      security:
-        - ApiKeyAuth: []
-      summary: Refine session PRD
-      tags:
-        - sessions
+      - users
   /users/me:
     get:
-      consumes:
-        - application/json
-      description: Return the authenticated user's profile information
+      description: Get the authenticated user's profile
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: "#/definitions/main.userProfileResponse"
+            $ref: '#/definitions/github_com_farrasnazhif_go-starter_internal_dto_response.User'
         "401":
           description: Unauthorized
-          schema: {}
-        "500":
-          description: Internal Server Error
-          schema: {}
       security:
-        - ApiKeyAuth: []
-      summary: Get the authenticated user's profile
+      - BearerAuth: []
+      summary: Get user profile
       tags:
-        - users
+      - users
 schemes:
-  - http
-  - https
+- http
+- https
 securityDefinitions:
-  ApiKeyAuth:
-    description: JWT Bearer token for API authentication
+  BearerAuth:
+    description: Bearer token (e.g. "Bearer xxx")
     in: header
     name: Authorization
     type: apiKey

@@ -9,16 +9,7 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "termsOfService": "https://go-starter.example.com/terms",
-        "contact": {
-            "name": "API Support",
-            "url": "https://go-starter.example.com/support",
-            "email": "support@go-starter.example.com"
-        },
-        "license": {
-            "name": "Apache 2.0",
-            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
-        },
+        "contact": {},
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
@@ -26,7 +17,7 @@ const docTemplate = `{
     "paths": {
         "/auth/login": {
             "post": {
-                "description": "Login user with email and password",
+                "description": "Authenticate with email and password, returns JWT token",
                 "consumes": [
                     "application/json"
                 ],
@@ -34,41 +25,36 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "authentication"
+                    "auth"
                 ],
-                "summary": "Login user with email and password",
+                "summary": "Login user",
                 "parameters": [
                     {
-                        "description": "Email and password",
-                        "name": "payload",
+                        "description": "Login payload",
+                        "name": "body",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/main.LoginPayload"
+                            "$ref": "#/definitions/github_com_farrasnazhif_go-starter_internal_dto_request.Login"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "User logged in",
+                        "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/main.UserWithToken"
+                            "$ref": "#/definitions/github_com_farrasnazhif_go-starter_internal_dto_response.UserWithToken"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
-                        "schema": {}
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {}
+                        "description": "Bad Request"
                     }
                 }
             }
         },
         "/auth/otp/send": {
             "post": {
-                "description": "Send OTP for user registration",
+                "description": "Send OTP code to email for verification",
                 "consumes": [
                     "application/json"
                 ],
@@ -76,44 +62,33 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "authentication"
+                    "auth"
                 ],
-                "summary": "Send OTP for user registration",
+                "summary": "Send OTP for registration",
                 "parameters": [
                     {
-                        "description": "Email for OTP",
-                        "name": "payload",
+                        "description": "Email payload",
+                        "name": "body",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/main.SendOTPPayload"
+                            "$ref": "#/definitions/github_com_farrasnazhif_go-starter_internal_dto_request.SendOTP"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OTP sent",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
+                        "description": "OK"
                     },
                     "400": {
-                        "description": "Bad Request",
-                        "schema": {}
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {}
+                        "description": "Bad Request"
                     }
                 }
             }
         },
         "/auth/otp/verify": {
             "post": {
-                "description": "Verify OTP and activate user account",
+                "description": "Verify OTP code and activate user account, returns JWT token",
                 "consumes": [
                     "application/json"
                 ],
@@ -121,34 +96,29 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "authentication"
+                    "auth"
                 ],
-                "summary": "Verify OTP and activate user",
+                "summary": "Verify OTP and activate account",
                 "parameters": [
                     {
-                        "description": "Email and OTP code",
-                        "name": "payload",
+                        "description": "OTP verification payload",
+                        "name": "body",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/main.VerifyOTPPayload"
+                            "$ref": "#/definitions/github_com_farrasnazhif_go-starter_internal_dto_request.VerifyOTP"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OTP verified and user activated",
+                        "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/main.UserWithToken"
+                            "$ref": "#/definitions/github_com_farrasnazhif_go-starter_internal_dto_response.UserWithToken"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
-                        "schema": {}
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {}
+                        "description": "Bad Request"
                     }
                 }
             }
@@ -163,35 +133,26 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "authentication"
+                    "auth"
                 ],
-                "summary": "Register a user",
+                "summary": "Register a new user",
                 "parameters": [
                     {
-                        "description": "User credentials",
-                        "name": "payload",
+                        "description": "Registration payload",
+                        "name": "body",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/main.RegisterUserPayload"
+                            "$ref": "#/definitions/github_com_farrasnazhif_go-starter_internal_dto_request.Register"
                         }
                     }
                 ],
                 "responses": {
                     "201": {
-                        "description": "User registered",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
+                        "description": "Created"
                     },
                     "400": {
-                        "description": "Bad Request",
-                        "schema": {}
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {}
+                        "description": "Bad Request"
                     }
                 }
             }
@@ -200,10 +161,10 @@ const docTemplate = `{
             "post": {
                 "security": [
                     {
-                        "ApiKeyAuth": []
+                        "BearerAuth": []
                     }
                 ],
-                "description": "Create a PayPal subscription for the Pro plan and return approval links",
+                "description": "Create a new Pro subscription via PayPal",
                 "produces": [
                     "application/json"
                 ],
@@ -215,27 +176,60 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/main.APIResponse"
+                            "$ref": "#/definitions/github_com_farrasnazhif_go-starter_internal_dto_response.Subscription"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/main.ErrorResponse"
-                        }
+                        "description": "Unauthorized"
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal Server Error"
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Cancel the current Pro subscription",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "billing"
+                ],
+                "summary": "Cancel PayPal subscription",
+                "parameters": [
+                    {
+                        "description": "Cancellation reason",
+                        "name": "body",
+                        "in": "body",
                         "schema": {
-                            "$ref": "#/definitions/main.ErrorResponse"
+                            "$ref": "#/definitions/github_com_farrasnazhif_go-starter_internal_dto_request.CancelSubscription"
                         }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
                     }
                 }
             }
         },
         "/billing/paypal/webhook": {
             "post": {
-                "description": "Receive verified PayPal subscription webhooks",
+                "description": "Handle PayPal subscription webhook events",
                 "consumes": [
                     "application/json"
                 ],
@@ -248,449 +242,38 @@ const docTemplate = `{
                 "summary": "PayPal webhook",
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
+                        "description": "OK"
                     },
                     "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/main.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/main.ErrorResponse"
-                        }
+                        "description": "Bad Request"
                     }
                 }
             }
         },
-        "/health": {
-            "get": {
-                "description": "Check if the API is running and retrieve health status",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "health"
-                ],
-                "summary": "Health check endpoint",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/main.HealthCheckResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/main.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/prds/{oldPRDID}/diff/{newPRDID}": {
+        "/users/billing": {
             "get": {
                 "security": [
                     {
-                        "ApiKeyAuth": []
+                        "BearerAuth": []
                     }
                 ],
-                "description": "Compare an old PRD version with a newer PRD version",
+                "description": "Get the authenticated user's billing and subscription info",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "prds"
+                    "users"
                 ],
-                "summary": "Diff PRDs",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Old PRD ID",
-                        "name": "oldPRDID",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "New PRD ID",
-                        "name": "newPRDID",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
+                "summary": "Get user billing info",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/main.APIResponse"
+                            "$ref": "#/definitions/github_com_farrasnazhif_go-starter_internal_dto_response.UserBilling"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/main.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/main.ErrorResponse"
-                        }
-                    },
-                    "409": {
-                        "description": "Conflict",
-                        "schema": {
-                            "$ref": "#/definitions/main.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/main.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/prds/{prdID}": {
-            "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Load an exact PRD version",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "prds"
-                ],
-                "summary": "Get PRD",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "PRD ID",
-                        "name": "prdID",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/main.APIResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/main.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/main.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/main.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/prds/{prdID}/export/markdown": {
-            "post": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Download a PRD as a markdown file",
-                "produces": [
-                    "text/markdown"
-                ],
-                "tags": [
-                    "prds"
-                ],
-                "summary": "Export PRD markdown",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "PRD ID",
-                        "name": "prdID",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/main.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/main.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/main.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/sessions": {
-            "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Load all authenticated user PRD workspaces",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "sessions"
-                ],
-                "summary": "List sessions",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/main.APIResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/main.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/main.ErrorResponse"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Create a new AI PRD workspace",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "sessions"
-                ],
-                "summary": "Create session",
-                "parameters": [
-                    {
-                        "description": "Initial prompt and PRD mode",
-                        "name": "payload",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.CreateSessionRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/main.APIResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/main.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/main.ErrorResponse"
-                        }
-                    },
-                    "402": {
-                        "description": "Payment Required",
-                        "schema": {
-                            "$ref": "#/definitions/main.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/main.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/sessions/{sessionID}/messages": {
-            "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Load chat history for a PRD workspace",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "sessions"
-                ],
-                "summary": "List session messages",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Session ID",
-                        "name": "sessionID",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/main.APIResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/main.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/main.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/main.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/sessions/{sessionID}/refine": {
-            "post": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Create a new PRD version from a refinement instruction",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "sessions"
-                ],
-                "summary": "Refine session PRD",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Session ID",
-                        "name": "sessionID",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Refinement instruction",
-                        "name": "payload",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.RefineSessionRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/main.APIResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/main.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/main.ErrorResponse"
-                        }
-                    },
-                    "402": {
-                        "description": "Payment Required",
-                        "schema": {
-                            "$ref": "#/definitions/main.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/main.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/main.ErrorResponse"
-                        }
+                        "description": "Unauthorized"
                     }
                 }
             }
@@ -699,112 +282,41 @@ const docTemplate = `{
             "get": {
                 "security": [
                     {
-                        "ApiKeyAuth": []
+                        "BearerAuth": []
                     }
                 ],
-                "description": "Return the authenticated user's profile information",
-                "consumes": [
-                    "application/json"
-                ],
+                "description": "Get the authenticated user's profile",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "users"
                 ],
-                "summary": "Get the authenticated user's profile",
+                "summary": "Get user profile",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/main.userProfileResponse"
+                            "$ref": "#/definitions/github_com_farrasnazhif_go-starter_internal_dto_response.User"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
-                        "schema": {}
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {}
+                        "description": "Unauthorized"
                     }
                 }
             }
         }
     },
     "definitions": {
-        "dto.CreateSessionRequest": {
-            "type": "object",
-            "required": [
-                "prompt"
-            ],
-            "properties": {
-                "mode": {
-                    "type": "string",
-                    "enum": [
-                        "standard",
-                        "developer"
-                    ]
-                },
-                "prompt": {
-                    "type": "string",
-                    "minLength": 10
-                }
-            }
-        },
-        "dto.RefineSessionRequest": {
-            "type": "object",
-            "required": [
-                "instruction"
-            ],
-            "properties": {
-                "instruction": {
-                    "type": "string",
-                    "minLength": 3
-                }
-            }
-        },
-        "main.APIResponse": {
+        "github_com_farrasnazhif_go-starter_internal_dto_request.CancelSubscription": {
             "type": "object",
             "properties": {
-                "data": {},
-                "message": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "integer"
-                }
-            }
-        },
-        "main.ErrorResponse": {
-            "type": "object",
-            "properties": {
-                "error": {
-                    "type": "string"
-                },
-                "message": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "integer"
-                }
-            }
-        },
-        "main.HealthCheckResponse": {
-            "type": "object",
-            "properties": {
-                "env": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "string"
-                },
-                "version": {
+                "reason": {
                     "type": "string"
                 }
             }
         },
-        "main.LoginPayload": {
+        "github_com_farrasnazhif_go-starter_internal_dto_request.Login": {
             "type": "object",
             "required": [
                 "email",
@@ -819,7 +331,7 @@ const docTemplate = `{
                 }
             }
         },
-        "main.RegisterUserPayload": {
+        "github_com_farrasnazhif_go-starter_internal_dto_request.Register": {
             "type": "object",
             "required": [
                 "email",
@@ -842,7 +354,7 @@ const docTemplate = `{
                 }
             }
         },
-        "main.SendOTPPayload": {
+        "github_com_farrasnazhif_go-starter_internal_dto_request.SendOTP": {
             "type": "object",
             "required": [
                 "email"
@@ -853,7 +365,85 @@ const docTemplate = `{
                 }
             }
         },
-        "main.UserWithToken": {
+        "github_com_farrasnazhif_go-starter_internal_dto_request.VerifyOTP": {
+            "type": "object",
+            "required": [
+                "code",
+                "email"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_farrasnazhif_go-starter_internal_dto_response.Subscription": {
+            "type": "object",
+            "properties": {
+                "approve_url": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "subscription_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_farrasnazhif_go-starter_internal_dto_response.User": {
+            "type": "object",
+            "properties": {
+                "credits": {
+                    "type": "integer"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_farrasnazhif_go-starter_internal_dto_response.UserBilling": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "expired_at": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "subscription_status": {
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_farrasnazhif_go-starter_internal_dto_response.UserWithToken": {
             "type": "object",
             "properties": {
                 "credits": {
@@ -878,49 +468,11 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
-        },
-        "main.VerifyOTPPayload": {
-            "type": "object",
-            "required": [
-                "code",
-                "email"
-            ],
-            "properties": {
-                "code": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                }
-            }
-        },
-        "main.userProfileResponse": {
-            "type": "object",
-            "properties": {
-                "credits": {
-                    "type": "integer"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "is_active": {
-                    "type": "boolean"
-                },
-                "role": {
-                    "type": "string"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
         }
     },
     "securityDefinitions": {
-        "ApiKeyAuth": {
-            "description": "JWT Bearer token for API authentication",
+        "BearerAuth": {
+            "description": "Bearer token (e.g. \"Bearer xxx\")",
             "type": "apiKey",
             "name": "Authorization",
             "in": "header"
@@ -930,12 +482,12 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "0.0.1",
-	Host:             "",
+	Version:          "1.0",
+	Host:             "localhost:8080",
 	BasePath:         "/api/v1",
 	Schemes:          []string{"http", "https"},
-	Title:            "go-starter API",
-	Description:      "AI-powered startup idea validation and PRD generation platform",
+	Title:            "Go Starter API",
+	Description:      "User authentication, profile management, and PayPal billing API",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

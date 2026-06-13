@@ -9,6 +9,7 @@ import (
 	"github.com/farrasnazhif/go-starter/internal/repository"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
 type Config struct {
@@ -35,6 +36,8 @@ func New(cfg Config, authHandler *handler.AuthHandler, userHandler *handler.User
 			w.Header().Set("Content-Type", "application/json")
 			w.Write([]byte(`{"status":"ok"}`))
 		})
+
+		r.Get("/swagger/*", httpSwagger.WrapHandler)
 
 		r.Route("/auth", func(r chi.Router) {
 			r.With(registerLimiter).Post("/register", authHandler.Register)
