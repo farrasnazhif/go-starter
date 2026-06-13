@@ -17,6 +17,7 @@ type User struct {
 	Role                  string
 	Credits               int
 	SubscriptionStatus    string
+	PayPalSubscriptionID  string
 }
 
 func (u *User) SubscriptionCreatedAtPtr() *time.Time {

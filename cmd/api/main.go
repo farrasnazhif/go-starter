@@ -9,13 +9,13 @@ import (
 	"github.com/farrasnazhif/go-starter/internal/database"
 	"github.com/farrasnazhif/go-starter/internal/handler"
 	"github.com/farrasnazhif/go-starter/internal/mailer"
+	"github.com/farrasnazhif/go-starter/internal/paypal"
 	"github.com/farrasnazhif/go-starter/internal/repository"
 	"github.com/farrasnazhif/go-starter/internal/router"
 	"github.com/farrasnazhif/go-starter/internal/service"
 )
 
 func main() {
-	// Config
 	addr := getEnv("ADDR", ":8080")
 	jwtSecret := getEnv("JWT_SECRET", "your-secret-key")
 	frontendURL := getEnv("FRONTEND_URL", "http://localhost:3000")
@@ -37,6 +37,18 @@ func main() {
 	// Repositories
 	userRepo := repository.NewUserRepository(db)
 	otpRepo := repository.NewOTPRepository(db)
+	billingRepo := repository.NewBillingRepository(db)
+
+	// PayPal
+	paypalClient := paypal.NewClient(paypal.Config{
+		ClientID:  getEnv("PAYPAL_CLIENT_ID", ""),
+		Secret:    getEnv("PAYPAL_CLIENT_SECRET", ""),
+		BaseURL:   getEnv("PAYPAL_BASE_URL", "https://api-m.sandbox.paypal.com"),
+		PlanID:    getEnv("PAYPAL_PRO_PLAN_ID", ""),
+		WebhookID: getEnv("PAYPAL_WEBHOOK_ID", ""),
+		ReturnURL: getEnv("PAYPAL_RETURN_URL", frontendURL+"/billing/success"),
+		CancelURL: getEnv("PAYPAL_CANCEL_URL", frontendURL+"/billing/cancel"),
+	})
 
 	// Mailer
 	m := mailer.NewResend(getEnv("RESEND_API_KEY", ""), getEnv("FROM_EMAIL", "onboarding@resend.dev"))
@@ -44,10 +56,12 @@ func main() {
 	// Services
 	authSvc := service.NewAuthService(userRepo, otpRepo, m, jwtSecret, env)
 	userSvc := service.NewUserService(userRepo)
+	billingSvc := service.NewBillingService(billingRepo, userRepo, paypalClient)
 
 	// Handlers
 	authHandler := handler.NewAuthHandler(authSvc)
 	userHandler := handler.NewUserHandler(userSvc)
+	billingHandler := handler.NewBillingHandler(billingSvc)
 
 	// Router
 	mux := router.New(router.Config{
@@ -56,7 +70,7 @@ func main() {
 		RateLimit:       30,
 		RegisterLimit:   5,
 		RateLimitWindow: time.Minute,
-	}, authHandler, userHandler, userRepo)
+	}, authHandler, userHandler, billingHandler, userRepo)
 
 	// Server
 	srv := &http.Server{

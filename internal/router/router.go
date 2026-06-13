@@ -19,7 +19,7 @@ type Config struct {
 	RateLimitWindow time.Duration
 }
 
-func New(cfg Config, authHandler *handler.AuthHandler, userHandler *handler.UserHandler, userRepo repository.UserRepository) http.Handler {
+func New(cfg Config, authHandler *handler.AuthHandler, userHandler *handler.UserHandler, billingHandler *handler.BillingHandler, userRepo repository.UserRepository) http.Handler {
 	r := chi.NewRouter()
 
 	r.Use(mw.CORS(cfg.FrontendURL))
@@ -47,6 +47,17 @@ func New(cfg Config, authHandler *handler.AuthHandler, userHandler *handler.User
 			r.Use(auth)
 			r.Get("/me", userHandler.GetProfile)
 			r.Get("/billing", userHandler.GetBilling)
+		})
+
+		// Webhook - no auth required
+		r.With(apiLimiter).Post("/billing/paypal/webhook", billingHandler.Webhook)
+
+		// Billing - authenticated
+		r.Route("/billing", func(r chi.Router) {
+			r.Use(auth)
+			r.Use(apiLimiter)
+			r.Post("/paypal/subscriptions", billingHandler.CreateSubscription)
+			r.Delete("/paypal/subscriptions", billingHandler.CancelSubscription)
 		})
 	})
 
