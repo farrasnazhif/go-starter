@@ -1,0 +1,24 @@
+export ADDR=:8080
+export ENV=development
+
+# Database
+export DB_ADDR=postgres://admin:adminpassword@localhost/go-starter?sslmode=disable
+
+# JWT
+export JWT_SECRET=your-secret-key
+
+# Frontend
+export FRONTEND_URL=http://localhost:3000
+
+# Email (Resend)
+export FROM_EMAIL=onboarding@resend.dev
+export RESEND_API_KEY=
+
+# PayPal
+export PAYPAL_CLIENT_ID=
+export PAYPAL_CLIENT_SECRET=
+export PAYPAL_BASE_URL=https://api-m.sandbox.paypal.com
+export PAYPAL_PRO_PLAN_ID=
+export PAYPAL_WEBHOOK_ID=
+export PAYPAL_RETURN_URL=http://localhost:3000/billing/success
+export PAYPAL_CANCEL_URL=http://localhost:3000/billing/cancel
