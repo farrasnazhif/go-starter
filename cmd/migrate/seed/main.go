@@ -1,23 +1,44 @@
 package main
 
 import (
+	"context"
+	"fmt"
 	"log"
+	"os"
 
-	"github.com/farrasnazhif/go-starter/internal/db"
-	"github.com/farrasnazhif/go-starter/internal/env"
-	"github.com/farrasnazhif/go-starter/internal/store"
+	"github.com/farrasnazhif/go-starter/internal/database"
+	"github.com/farrasnazhif/go-starter/internal/entity"
+	"github.com/farrasnazhif/go-starter/internal/repository"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func main() {
-	addr := env.GetString("DB_ADDR", "postgres://admin:adminpassword@localhost/go-starter?sslmode=disable")
-	conn, err := db.New(addr, 3, 3, "15m")
+	addr := os.Getenv("DB_ADDR")
+	if addr == "" {
+		addr = "postgres://admin:adminpassword@localhost/go-starter?sslmode=disable"
+	}
+
+	db, err := database.New(database.Config{Addr: addr, MaxOpenConns: 3, MaxIdleConns: 3, MaxIdleTime: "15m"})
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer db.Close()
 
-	defer conn.Close()
+	userRepo := repository.NewUserRepository(db)
+	ctx := context.Background()
 
-	store := store.NewStorage(conn)
-
-	db.Seed(store, conn)
+	for i := 0; i < 10; i++ {
+		hash, _ := bcrypt.GenerateFromPassword([]byte("password"), bcrypt.DefaultCost)
+		user := &entity.User{
+			Username:     fmt.Sprintf("user%d", i),
+			Email:        fmt.Sprintf("user%d@example.com", i),
+			PasswordHash: hash,
+			IsActive:     true,
+		}
+		if err := userRepo.Create(ctx, user); err != nil {
+			log.Printf("skip user%d: %v", i, err)
+			continue
+		}
+	}
+	log.Println("seeding complete")
 }

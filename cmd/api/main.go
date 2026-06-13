@@ -1,87 +1,79 @@
 package main
 
 import (
+	"log"
+	"net/http"
+	"os"
 	"time"
 
-	"github.com/farrasnazhif/go-starter/internal/db"
-	"github.com/farrasnazhif/go-starter/internal/env"
+	"github.com/farrasnazhif/go-starter/internal/database"
+	"github.com/farrasnazhif/go-starter/internal/handler"
 	"github.com/farrasnazhif/go-starter/internal/mailer"
-	"github.com/farrasnazhif/go-starter/internal/store"
-	"go.uber.org/zap"
+	"github.com/farrasnazhif/go-starter/internal/repository"
+	"github.com/farrasnazhif/go-starter/internal/router"
+	"github.com/farrasnazhif/go-starter/internal/service"
 )
 
-const version = "0.0.1"
-
-//	@title			go-starter API
-//	@version		0.0.1
-//	@description	User management and authentication API
-//	@termsOfService	https://go-starter.example.com/terms
-
-//	@contact.name	API Support
-//	@contact.url	https://go-starter.example.com/support
-//	@contact.email	support@go-starter.example.com
-
-//	@license.name	Apache 2.0
-//	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
-
-// @BasePath					/api/v1
-// @schemes					http https
-//
-// @securityDefinitions.apikey	ApiKeyAuth
-// @in							header
-// @name						Authorization
-// @description				JWT Bearer token for API authentication
 func main() {
-	frontendURL := env.GetString("FRONTEND_URL", "http://localhost:3000")
-	cfg := config{
-		addr:        env.GetString("ADDR", ":8080"),
-		apiURL:      env.GetString("EXTERNAL_URL", "localhost:8080"),
-		frontendURL: frontendURL,
-		db: dbConfig{
-			addr:         env.GetString("DB_ADDR", "postgres://admin:adminpassword@localhost/go-starter?sslmode=disable"),
-			maxOpenConns: env.GetInt("DB_MAX_OPEN_CONNS", 30),
-			maxIdleConns: env.GetInt("DB_MAX_IDLE_CONNS", 30),
-			maxIdleTime:  env.GetString("DB_MAX_IDLE_TIME", "15m"),
-		},
-		env: env.GetString("ENV", "development"),
-		jwt: jwtConfig{
-			secret: env.GetString("JWT_SECRET", "your-secret-key"),
-		},
-		mail: mailConfig{
-			exp:       time.Hour * 24 * 3,
-			fromEmail: env.GetString("FROM_EMAIL", "onboarding@resend.dev"),
-			resend: resendConfig{
-				apiKey: env.GetString("RESEND_API_KEY", ""),
-			},
-		},
-		rateLimiter: DefaultRateLimitConfig(),
-	}
+	// Config
+	addr := getEnv("ADDR", ":8080")
+	jwtSecret := getEnv("JWT_SECRET", "your-secret-key")
+	frontendURL := getEnv("FRONTEND_URL", "http://localhost:3000")
+	env := getEnv("ENV", "development")
 
-	logger := zap.Must(zap.NewProduction()).Sugar()
-	defer logger.Sync()
-
-	db, err := db.New(
-		cfg.db.addr,
-		cfg.db.maxOpenConns,
-		cfg.db.maxIdleConns,
-		cfg.db.maxIdleTime,
-	)
+	// Database
+	db, err := database.New(database.Config{
+		Addr:         getEnv("DB_ADDR", "postgres://admin:adminpassword@localhost/go-starter?sslmode=disable"),
+		MaxOpenConns: 30,
+		MaxIdleConns: 30,
+		MaxIdleTime:  "15m",
+	})
 	if err != nil {
-		logger.Fatal(err)
+		log.Fatal("failed to connect to database:", err)
 	}
 	defer db.Close()
-	logger.Info("database connection pool established")
+	log.Println("database connection pool established")
 
-	store := store.NewStorage(db)
-	mailer := mailer.NewResend(cfg.mail.resend.apiKey, cfg.mail.fromEmail)
+	// Repositories
+	userRepo := repository.NewUserRepository(db)
+	otpRepo := repository.NewOTPRepository(db)
 
-	app := &application{
-		config: cfg,
-		store:  store,
-		logger: logger,
-		mailer: mailer,
+	// Mailer
+	m := mailer.NewResend(getEnv("RESEND_API_KEY", ""), getEnv("FROM_EMAIL", "onboarding@resend.dev"))
+
+	// Services
+	authSvc := service.NewAuthService(userRepo, otpRepo, m, jwtSecret, env)
+	userSvc := service.NewUserService(userRepo)
+
+	// Handlers
+	authHandler := handler.NewAuthHandler(authSvc)
+	userHandler := handler.NewUserHandler(userSvc)
+
+	// Router
+	mux := router.New(router.Config{
+		FrontendURL:     frontendURL,
+		JWTSecret:       jwtSecret,
+		RateLimit:       30,
+		RegisterLimit:   5,
+		RateLimitWindow: time.Minute,
+	}, authHandler, userHandler, userRepo)
+
+	// Server
+	srv := &http.Server{
+		Addr:         addr,
+		Handler:      mux,
+		WriteTimeout: 30 * time.Second,
+		ReadTimeout:  10 * time.Second,
+		IdleTimeout:  time.Minute,
 	}
 
-	mux := app.mount()
-	logger.Fatal(app.run(mux))
+	log.Printf("server starting on %s [env=%s]", addr, env)
+	log.Fatal(srv.ListenAndServe())
+}
+
+func getEnv(key, fallback string) string {
+	if v, ok := os.LookupEnv(key); ok {
+		return v
+	}
+	return fallback
 }
