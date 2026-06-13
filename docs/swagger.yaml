@@ -1,0 +1,607 @@
+basePath: /api/v1
+definitions:
+  dto.CreateSessionRequest:
+    properties:
+      mode:
+        enum:
+          - standard
+          - developer
+        type: string
+      prompt:
+        minLength: 10
+        type: string
+    required:
+      - prompt
+    type: object
+  dto.RefineSessionRequest:
+    properties:
+      instruction:
+        minLength: 3
+        type: string
+    required:
+      - instruction
+    type: object
+  main.APIResponse:
+    properties:
+      data: {}
+      message:
+        type: string
+      status:
+        type: integer
+    type: object
+  main.ErrorResponse:
+    properties:
+      error:
+        type: string
+      message:
+        type: string
+      status:
+        type: integer
+    type: object
+  main.HealthCheckResponse:
+    properties:
+      env:
+        type: string
+      status:
+        type: string
+      version:
+        type: string
+    type: object
+  main.LoginPayload:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+      - email
+      - password
+    type: object
+  main.RegisterUserPayload:
+    properties:
+      email:
+        maxLength: 225
+        type: string
+      password:
+        maxLength: 72
+        minLength: 3
+        type: string
+      username:
+        maxLength: 100
+        type: string
+    required:
+      - email
+      - password
+      - username
+    type: object
+  main.SendOTPPayload:
+    properties:
+      email:
+        type: string
+    required:
+      - email
+    type: object
+  main.UserWithToken:
+    properties:
+      credits:
+        type: integer
+      email:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      role:
+        type: string
+      token:
+        type: string
+      username:
+        type: string
+    type: object
+  main.VerifyOTPPayload:
+    properties:
+      code:
+        type: string
+      email:
+        type: string
+    required:
+      - code
+      - email
+    type: object
+  main.userProfileResponse:
+    properties:
+      credits:
+        type: integer
+      email:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      role:
+        type: string
+      username:
+        type: string
+    type: object
+info:
+  contact:
+    email: support@go-starter.example.com
+    name: API Support
+    url: https://go-starter.example.com/support
+  description: AI-powered startup idea validation and PRD generation platform
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: https://go-starter.example.com/terms
+  title: go-starter API
+  version: 0.0.1
+paths:
+  /auth/login:
+    post:
+      consumes:
+        - application/json
+      description: Login user with email and password
+      parameters:
+        - description: Email and password
+          in: body
+          name: payload
+          required: true
+          schema:
+            $ref: "#/definitions/main.LoginPayload"
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: User logged in
+          schema:
+            $ref: "#/definitions/main.UserWithToken"
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Login user with email and password
+      tags:
+        - authentication
+  /auth/otp/send:
+    post:
+      consumes:
+        - application/json
+      description: Send OTP for user registration
+      parameters:
+        - description: Email for OTP
+          in: body
+          name: payload
+          required: true
+          schema:
+            $ref: "#/definitions/main.SendOTPPayload"
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OTP sent
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Send OTP for user registration
+      tags:
+        - authentication
+  /auth/otp/verify:
+    post:
+      consumes:
+        - application/json
+      description: Verify OTP and activate user account
+      parameters:
+        - description: Email and OTP code
+          in: body
+          name: payload
+          required: true
+          schema:
+            $ref: "#/definitions/main.VerifyOTPPayload"
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OTP verified and user activated
+          schema:
+            $ref: "#/definitions/main.UserWithToken"
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Verify OTP and activate user
+      tags:
+        - authentication
+  /auth/register:
+    post:
+      consumes:
+        - application/json
+      description: Create a user account and send OTP for verification
+      parameters:
+        - description: User credentials
+          in: body
+          name: payload
+          required: true
+          schema:
+            $ref: "#/definitions/main.RegisterUserPayload"
+      produces:
+        - application/json
+      responses:
+        "201":
+          description: User registered
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Register a user
+      tags:
+        - authentication
+  /billing/paypal/subscriptions:
+    post:
+      description:
+        Create a PayPal subscription for the Pro plan and return approval
+        links
+      produces:
+        - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: "#/definitions/main.APIResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/main.ErrorResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/main.ErrorResponse"
+      security:
+        - ApiKeyAuth: []
+      summary: Create PayPal subscription
+      tags:
+        - billing
+  /billing/paypal/webhook:
+    post:
+      consumes:
+        - application/json
+      description: Receive verified PayPal subscription webhooks
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/main.ErrorResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/main.ErrorResponse"
+      summary: PayPal webhook
+      tags:
+        - billing
+  /health:
+    get:
+      consumes:
+        - application/json
+      description: Check if the API is running and retrieve health status
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/main.HealthCheckResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/main.ErrorResponse"
+      summary: Health check endpoint
+      tags:
+        - health
+  /prds/{oldPRDID}/diff/{newPRDID}:
+    get:
+      description: Compare an old PRD version with a newer PRD version
+      parameters:
+        - description: Old PRD ID
+          in: path
+          name: oldPRDID
+          required: true
+          type: string
+        - description: New PRD ID
+          in: path
+          name: newPRDID
+          required: true
+          type: string
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/main.APIResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/main.ErrorResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/main.ErrorResponse"
+        "409":
+          description: Conflict
+          schema:
+            $ref: "#/definitions/main.ErrorResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/main.ErrorResponse"
+      security:
+        - ApiKeyAuth: []
+      summary: Diff PRDs
+      tags:
+        - prds
+  /prds/{prdID}:
+    get:
+      description: Load an exact PRD version
+      parameters:
+        - description: PRD ID
+          in: path
+          name: prdID
+          required: true
+          type: string
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/main.APIResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/main.ErrorResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/main.ErrorResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/main.ErrorResponse"
+      security:
+        - ApiKeyAuth: []
+      summary: Get PRD
+      tags:
+        - prds
+  /prds/{prdID}/export/markdown:
+    post:
+      description: Download a PRD as a markdown file
+      parameters:
+        - description: PRD ID
+          in: path
+          name: prdID
+          required: true
+          type: string
+      produces:
+        - text/markdown
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/main.ErrorResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/main.ErrorResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/main.ErrorResponse"
+      security:
+        - ApiKeyAuth: []
+      summary: Export PRD markdown
+      tags:
+        - prds
+  /sessions:
+    get:
+      description: Load all authenticated user PRD workspaces
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/main.APIResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/main.ErrorResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/main.ErrorResponse"
+      security:
+        - ApiKeyAuth: []
+      summary: List sessions
+      tags:
+        - sessions
+    post:
+      consumes:
+        - application/json
+      description: Create a new AI PRD workspace
+      parameters:
+        - description: Initial prompt and PRD mode
+          in: body
+          name: payload
+          required: true
+          schema:
+            $ref: "#/definitions/dto.CreateSessionRequest"
+      produces:
+        - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: "#/definitions/main.APIResponse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/main.ErrorResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/main.ErrorResponse"
+        "402":
+          description: Payment Required
+          schema:
+            $ref: "#/definitions/main.ErrorResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/main.ErrorResponse"
+      security:
+        - ApiKeyAuth: []
+      summary: Create session
+      tags:
+        - sessions
+  /sessions/{sessionID}/messages:
+    get:
+      description: Load chat history for a PRD workspace
+      parameters:
+        - description: Session ID
+          in: path
+          name: sessionID
+          required: true
+          type: string
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/main.APIResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/main.ErrorResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/main.ErrorResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/main.ErrorResponse"
+      security:
+        - ApiKeyAuth: []
+      summary: List session messages
+      tags:
+        - sessions
+  /sessions/{sessionID}/refine:
+    post:
+      consumes:
+        - application/json
+      description: Create a new PRD version from a refinement instruction
+      parameters:
+        - description: Session ID
+          in: path
+          name: sessionID
+          required: true
+          type: string
+        - description: Refinement instruction
+          in: body
+          name: payload
+          required: true
+          schema:
+            $ref: "#/definitions/dto.RefineSessionRequest"
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/main.APIResponse"
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/main.ErrorResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/main.ErrorResponse"
+        "402":
+          description: Payment Required
+          schema:
+            $ref: "#/definitions/main.ErrorResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/main.ErrorResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/main.ErrorResponse"
+      security:
+        - ApiKeyAuth: []
+      summary: Refine session PRD
+      tags:
+        - sessions
+  /users/me:
+    get:
+      consumes:
+        - application/json
+      description: Return the authenticated user's profile information
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/main.userProfileResponse"
+        "401":
+          description: Unauthorized
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+        - ApiKeyAuth: []
+      summary: Get the authenticated user's profile
+      tags:
+        - users
+schemes:
+  - http
+  - https
+securityDefinitions:
+  ApiKeyAuth:
+    description: JWT Bearer token for API authentication
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
